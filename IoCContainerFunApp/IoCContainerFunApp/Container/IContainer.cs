@@ -7,7 +7,6 @@ namespace IoCContainerFunApp.Container
     {
         IEnumerable<Type> Parts { get; }
         void Register<TImplementation, TAbstraction>(bool isLazy);
-        void Compose();
-
+        object this[Type type] { get; }
     }
 }

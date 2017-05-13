@@ -66,9 +66,10 @@
     <Compile Include="Container\Attribute\DemonDecoratorAttribute.cs" />
     <Compile Include="Container\DemonContainer.cs" />
     <Compile Include="Container\IContainer.cs" />
+    <Compile Include="Container\LogProxy.cs" />
     <Compile Include="Dependencies\Implementations\ClockService.cs" />
     <Compile Include="Dependencies\Implementations\DriverProvider.cs" />
-    <Compile Include="Dependencies\Implementations\Decorator.cs" />
+    <Compile Include="Dependencies\Implementations\LoggerDecorator.cs" />
     <Compile Include="Dependencies\Implementations\Logger.cs" />
     <Compile Include="Dependencies\Implementations\RedCar.cs" />
     <Compile Include="Dependencies\Interfaces\ICar.cs" />

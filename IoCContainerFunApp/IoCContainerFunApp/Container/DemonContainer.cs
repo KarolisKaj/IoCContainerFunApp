@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IoCContainerFunApp.Container.Attribute;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -11,10 +12,7 @@ namespace IoCContainerFunApp.Container
 
         public IEnumerable<Type> Parts => _registrations.Keys;
 
-        public void Compose()
-        {
-            throw new NotImplementedException();
-        }
+        public object this[Type type] { get => _registrations[type]; }
 
         public void Register<TImplementation, TAbstraction>(bool isLazy = false)
         {
@@ -26,13 +24,19 @@ namespace IoCContainerFunApp.Container
         private object GetInstance(Type type)
         {
             object instance = null;
+
             foreach (var ctor in type.GetConstructors(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (IsPossibleToCreate(ctor))
-                    return ctor.Invoke(MatchingDependenciesFor(ctor.GetParameters()).ToArray());
+                {
+                    instance = ctor.Invoke(MatchingDependenciesFor(ctor.GetParameters()).ToArray());
+                    if (IsProxyRequired(instance))
+                        instance = CreateProxy(instance);
+                }
             }
             if (instance == null)
                 throw new ArgumentException($"No suitable CTOR was found to create instance of {type}");
+
             InjectSetMethods(instance);
             return instance;
         }
@@ -64,6 +68,33 @@ namespace IoCContainerFunApp.Container
             if (dependency is Lazy<object>)
                 return ((Lazy<object>)dependency).Value;
             return dependency;
+        }
+
+        private bool IsProxyRequired(object instance)
+        {
+            var attribute = instance.GetType().GetCustomAttribute<DemonDecoratorAttribute>();
+            return !(attribute == null || (attribute.PostMethod == null && attribute.PreMethod == null));
+        }
+
+        private object CreateProxy(object instance)
+        {
+            return LogProxy.Create(instance);
+        }
+
+        private IEnumerable<System.Attribute> GetKnownAttributesOfInstance(object instance)
+        {
+            var allKnownAttributes = GetKnownAttributes();
+            return instance.GetType().GetCustomAttributes().Where(x => allKnownAttributes.Any(y => y == x));
+        }
+
+        private IEnumerable<System.Attribute> GetKnownAttributes()
+        {
+            return GetTypesInNamespace(this.GetType().Assembly, "IoCContainerFunApp.Container.Attribute").OfType<System.Attribute>();
+        }
+
+        private Type[] GetTypesInNamespace(Assembly assembly, string nameSpace)
+        {
+            return assembly.GetTypes().Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
         }
     }
 }

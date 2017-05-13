@@ -10,9 +10,14 @@ namespace IoCContainerFunApp
         public Bootstrapper()
         {
             Container = new DemonContainer();
+            Container.Register<ILogger, Logger>(true);
+            Container.Register<LoggerDecorator, LoggerDecorator>(false);
             Container.Register<IDriverProvider, DriverProvider>(true);
             Container.Register<IService, ClockService>(true);
+            // Not lazy
             Container.Register<ICar, RedCar>(false);
+
+            (Container[typeof(ICar)] as RedCar).Drive();
         }
 
         internal void Compose()
@@ -28,7 +33,6 @@ namespace IoCContainerFunApp
             var window = new MainWindow();
             window.Show();
             window.InjectParts(Container.Parts);
-
         }
     }
 }
