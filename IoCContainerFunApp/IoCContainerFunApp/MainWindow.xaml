@@ -3,10 +3,35 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:IoCContainerFunApp"
+        Height="400" Width="600"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
+        Title="MainWindow" >
+    <Grid x:Name="mainGrid" Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Label Content="Dependencies:" FontWeight="Bold" Margin="0,0,0,5"/>
+        <ListView Grid.Row="1" Height="0" ScrollViewer.HorizontalScrollBarVisibility="Hidden"  Width="0" ItemsSource="{Binding Parts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
+            <ListView.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard Storyboard.TargetProperty="Width">
+                            <DoubleAnimation To="{Binding ElementName=mainGrid, Path=ActualWidth}" Duration="0:0:2.00"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <BeginStoryboard>
+                        <Storyboard Storyboard.TargetProperty="Height">
+                            <DoubleAnimation  To="{Binding ElementName=mainGrid, Path=ActualHeight}" Duration="0:0:2.00"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <BeginStoryboard>
+                        <Storyboard Storyboard.TargetProperty="BorderThickness">
+                            <ThicknessAnimation SpeedRatio="0.3" To="0" Duration="0:0:2.00"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </ListView.Triggers>
+        </ListView>
     </Grid>
 </Window>
