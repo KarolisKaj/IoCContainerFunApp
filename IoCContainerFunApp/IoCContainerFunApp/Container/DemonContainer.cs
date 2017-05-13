@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 
 namespace IoCContainerFunApp.Container
 {
@@ -14,12 +15,36 @@ namespace IoCContainerFunApp.Container
 
         public object this[Type type] { get => _registrations[type]; }
 
-        public void Register<TImplementation, TAbstraction>(bool isLazy = false)
+        public void Register<TAbstraction, TImplementation>(bool isLazy = false)
         {
-            _registrations.Add(typeof(TImplementation), isLazy ? GetLazyInstance(typeof(TAbstraction)) : GetInstance(typeof(TAbstraction)));
+            Register(typeof(TAbstraction), typeof(TImplementation), isLazy);
+        }
+        public void Register(Type typeAbstract, Type typeImplementation, bool isLazy = false)
+        {
+            _registrations.Add(typeAbstract, isLazy ? GetLazyInstance(typeImplementation) : GetInstance(typeImplementation));
+        }
+        public bool RegisterSafe(Type typeAbstract, Type typeConcrete, bool isLazy = false)
+        {
+            try
+            {
+                Register(typeAbstract, typeConcrete, isLazy);
+                return true;
+            }
+            catch { return false; }
+        }
+        public bool RegisterSafe<TAbstraction, TImplementation>(bool isLazy)
+        {
+            try
+            {
+                Register<TAbstraction, TImplementation>(isLazy);
+                return true;
+            }
+            catch { return false; }
         }
 
-        private Lazy<object> GetLazyInstance(Type type) => new Lazy<object>(() => GetInstance(type), true);
+        // TODO: Perform lazy init
+        // Lazy<object> was before. We need AoP approach
+        private object GetLazyInstance(Type type) => GetInstance(type);
 
         private object GetInstance(Type type)
         {
@@ -31,7 +56,7 @@ namespace IoCContainerFunApp.Container
                 {
                     instance = ctor.Invoke(MatchingDependenciesFor(ctor.GetParameters()).ToArray());
                     if (IsProxyRequired(instance))
-                        instance = CreateProxy(instance);
+                        instance = CreateAttributedProxy(instance);
                 }
             }
             if (instance == null)
@@ -72,24 +97,44 @@ namespace IoCContainerFunApp.Container
 
         private bool IsProxyRequired(object instance)
         {
-            var attribute = instance.GetType().GetCustomAttribute<DemonDecoratorAttribute>();
-            return !(attribute == null || (attribute.PostMethod == null && attribute.PreMethod == null));
+            var attributes = GetKnownAttributesOfInstance(instance);
+            return attributes.Count() > 0;
         }
 
-        private object CreateProxy(object instance)
+        private object CreateAttributedProxy(object instance)
         {
-            return LogProxy.Create(instance);
+            var attributes = GetKnownAttributesOfInstance(instance);
+            if (attributes.OfType<DemonDecoratorAttribute>().Any())
+            {
+                var decoratorAttribute = attributes.OfType<DemonDecoratorAttribute>().First();
+                RegisterSafe(decoratorAttribute.Type, decoratorAttribute.Type, true);
+                var instanceTo = this[decoratorAttribute.Type];
+                var preMethod = instanceTo.GetType().GetMethod(decoratorAttribute.PreMethod);
+                var postMethod = instanceTo.GetType().GetMethod(decoratorAttribute.PostMethod);
+                var actionType = typeof(Action<IMessage>);
+
+                var preMethodDelegate = (Action<IMessage>)Delegate.CreateDelegate(actionType, instanceTo, preMethod);
+                var postMethodDelegate = (Action<IMessage>)Delegate.CreateDelegate(actionType, instanceTo, postMethod);
+                return DecoratorProxy.Create(instance, preMethodDelegate, postMethodDelegate);
+            }
+            if (attributes.OfType<DemonDelegatorAttribute>().Any())
+            {
+                var delegatorAttribute = attributes.OfType<DemonDelegatorAttribute>().First();
+
+                return DelegatorProxy.Create(instance, GetInstance(delegatorAttribute.Implementation), delegatorAttribute.Abstraction);
+            }
+            throw new NotImplementedException("Missing imp");
         }
 
         private IEnumerable<System.Attribute> GetKnownAttributesOfInstance(object instance)
         {
             var allKnownAttributes = GetKnownAttributes();
-            return instance.GetType().GetCustomAttributes().Where(x => allKnownAttributes.Any(y => y == x));
+            return instance.GetType().GetCustomAttributes().Where(x => allKnownAttributes.Any(y => y == x.GetType()));
         }
 
-        private IEnumerable<System.Attribute> GetKnownAttributes()
+        private IEnumerable<Type> GetKnownAttributes()
         {
-            return GetTypesInNamespace(this.GetType().Assembly, "IoCContainerFunApp.Container.Attribute").OfType<System.Attribute>();
+            return GetTypesInNamespace(this.GetType().Assembly, "IoCContainerFunApp.Container.Attribute").Where(x => x.BaseType == typeof(System.Attribute));
         }
 
         private Type[] GetTypesInNamespace(Assembly assembly, string nameSpace)

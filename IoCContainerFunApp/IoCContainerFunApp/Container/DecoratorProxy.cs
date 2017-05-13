@@ -1,16 +1,17 @@
-﻿using System;
+﻿using IoCContainerFunApp.Container.Attribute;
+using System;
 using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Proxies;
 
 namespace IoCContainerFunApp.Container
 {
-    public class LogProxy : RealProxy
+    public class DecoratorProxy : RealProxy
     {
         private readonly object _instance;
-        private Action<string> _preAction;
-        private Action<string> _postAction;
-        private LogProxy(object instance, Action<string> preAction = null, Action<string> postAction = null)
+        private Action<IMessage> _preAction;
+        private Action<IMessage> _postAction;
+        private DecoratorProxy(object instance, Action<IMessage> preAction = null, Action<IMessage> postAction = null)
             : base(instance.GetType())
         {
             _preAction = preAction;
@@ -18,18 +19,18 @@ namespace IoCContainerFunApp.Container
             _instance = instance;
         }
 
-        public static object Create(object instance, Action<string> preAction = null, Action<string> postAction = null)
+        public static object Create(object instance, Action<IMessage> preAction = null, Action<IMessage> postAction = null)
         {
-            return new LogProxy(instance, preAction, postAction).GetTransparentProxy();
+            return new DecoratorProxy(instance, preAction, postAction).GetTransparentProxy();
         }
 
         public override IMessage Invoke(IMessage msg)
         {
             var methodCall = (IMethodCallMessage)msg;
             var method = (MethodInfo)methodCall.MethodBase;
-            _preAction($"{method} called on type - {_instance.GetType()}");
+            _preAction?.Invoke(msg);
             var result = method.Invoke(_instance, methodCall.InArgs);
-            _postAction($"{method} called on type - {_instance.GetType()}");
+            _postAction?.Invoke(msg);
             return new ReturnMessage(result, null, 0, methodCall.LogicalCallContext, methodCall);
         }
     }

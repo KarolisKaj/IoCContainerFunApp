@@ -63,18 +63,24 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Bootstrapper.cs" />
+    <Compile Include="Container\Attribute\DemonDelegatorAttribute.cs" />
     <Compile Include="Container\Attribute\DemonDecoratorAttribute.cs" />
+    <Compile Include="Container\DelegatorProxy.cs" />
     <Compile Include="Container\DemonContainer.cs" />
     <Compile Include="Container\IContainer.cs" />
-    <Compile Include="Container\LogProxy.cs" />
+    <Compile Include="Container\DecoratorProxy.cs" />
     <Compile Include="Dependencies\Implementations\ClockService.cs" />
+    <Compile Include="Dependencies\Implementations\Diagnostics.cs" />
     <Compile Include="Dependencies\Implementations\DriverProvider.cs" />
     <Compile Include="Dependencies\Implementations\LoggerDecorator.cs" />
     <Compile Include="Dependencies\Implementations\Logger.cs" />
+    <Compile Include="Dependencies\Implementations\CpuDelegator.cs" />
     <Compile Include="Dependencies\Implementations\RedCar.cs" />
     <Compile Include="Dependencies\Interfaces\ICar.cs" />
+    <Compile Include="Dependencies\Interfaces\IDiagnosis.cs" />
     <Compile Include="Dependencies\Interfaces\IDriverProvider.cs" />
     <Compile Include="Dependencies\Interfaces\ILogger.cs" />
+    <Compile Include="Dependencies\Interfaces\IPerformance.cs" />
     <Compile Include="Dependencies\Interfaces\IProvider.cs" />
     <Compile Include="Dependencies\Interfaces\IService.cs" />
     <Compile Include="MainWindow.xaml.cs">

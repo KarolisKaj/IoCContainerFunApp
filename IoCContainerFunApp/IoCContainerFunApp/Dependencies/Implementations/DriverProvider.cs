@@ -1,5 +1,4 @@
-﻿using IoCContainerFunApp.Container.Attribute;
-using IoCContainerFunApp.Dependencies.Interfaces;
+﻿using IoCContainerFunApp.Dependencies.Interfaces;
 
 namespace IoCContainerFunApp.Dependencies.Implementations
 {

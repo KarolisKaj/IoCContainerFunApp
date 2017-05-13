@@ -11,13 +11,14 @@ namespace IoCContainerFunApp
         {
             Container = new DemonContainer();
             Container.Register<ILogger, Logger>(true);
-            Container.Register<LoggerDecorator, LoggerDecorator>(false);
             Container.Register<IDriverProvider, DriverProvider>(true);
             Container.Register<IService, ClockService>(true);
             // Not lazy
             Container.Register<ICar, RedCar>(false);
+            Container.Register<IPerformance, Diagnostics>(false);
+            Container.Register<IDiagnosis, Diagnostics>(false);
+            System.Console.WriteLine((Container[typeof(IPerformance)] as IPerformance).CurrentCPUUsage);
 
-            (Container[typeof(ICar)] as RedCar).Drive();
         }
 
         internal void Compose()

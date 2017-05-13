@@ -1,4 +1,5 @@
 ﻿using IoCContainerFunApp.Dependencies.Interfaces;
+using System.Runtime.Remoting.Messaging;
 
 namespace IoCContainerFunApp.Dependencies.Implementations
 {
@@ -9,11 +10,11 @@ namespace IoCContainerFunApp.Dependencies.Implementations
         {
             _logger = logger;
         }
-        public void PreMethod(string message)
+        public void PreMethod(IMessage msgInfo)
         {
             _logger.Log(@"Decorator PreMethod called with - {message}");
         }
-        public void PostMethod(string message)
+        public void PostMethod(IMessage msgInfo)
         {
             _logger.Log(@"Decorator PostMethod called with - {message}");
         }

@@ -3,13 +3,13 @@
     using System;
     public class DemonDecoratorAttribute : Attribute
     {
-        public DemonDecoratorAttribute(Type decoratorType, string preMethod = null, string postMethod = null)
+        public DemonDecoratorAttribute(Type type, string preMethod = null, string postMethod = null)
         {
-            DecoratorType = decoratorType;
+            Type = type;
             PreMethod = preMethod;
             PostMethod = postMethod;
         }
-        public Type DecoratorType { get; set; }
+        public Type Type { get; set; }
         public string PreMethod { get; set; }
         public string PostMethod { get; set; }
     }
