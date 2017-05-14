@@ -9,19 +9,19 @@ namespace IoCContainerFunApp.Container
     public class DelegatorProxy : RealProxy
     {
         private object _mainInstance;
-        private object _delegateToInstance;
+        private Lazy<object> _delegateToInstance;
         private Type _interfaceToProxy;
-        private DelegatorProxy(object instance, object delegateToObject, Type interfaceToProxy)
+        private DelegatorProxy(object instance, Lazy<object> delegateToInstance, Type interfaceToProxy)
             : base(instance.GetType())
         {
-            _delegateToInstance = delegateToObject;
+            _delegateToInstance = delegateToInstance;
             _interfaceToProxy = interfaceToProxy;
             _mainInstance = instance;
         }
 
-        public static object Create(object proxyObject, object delegateToObject, Type interfaceToProxy)
+        public static object Create(object proxyObject, Lazy<object> delegateToInstance, Type interfaceToProxy)
         {
-            return new DelegatorProxy(proxyObject, delegateToObject, interfaceToProxy).GetTransparentProxy();
+            return new DelegatorProxy(proxyObject, delegateToInstance, interfaceToProxy).GetTransparentProxy();
         }
 
         public override IMessage Invoke(IMessage msg)
@@ -30,7 +30,7 @@ namespace IoCContainerFunApp.Container
             var method = (MethodInfo)methodCall.MethodBase;
             object result;
             if (_interfaceToProxy.GetMethods().Any(x => x == method))
-                result = method.Invoke(_delegateToInstance, methodCall.InArgs);
+                result = method.Invoke(_delegateToInstance.Value, methodCall.InArgs);
             else
                 result = method.Invoke(_mainInstance, methodCall.InArgs);
             return new ReturnMessage(result, null, 0, methodCall.LogicalCallContext, methodCall);

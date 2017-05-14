@@ -45,7 +45,7 @@ namespace IoCContainerFunApp.Container
 
         // TODO: Perform lazy init
         // Lazy<object> was before. We need AoP approach
-        private object GetLazyInstance(Type type) => GetInstance(type);
+        private object GetLazyInstance(Type type) => new Lazy<object>(() => GetInstance(type));
 
         private object GetInstance(Type type)
         {
@@ -109,7 +109,7 @@ namespace IoCContainerFunApp.Container
             {
                 var decoratorAttribute = attributes.OfType<DemonDecoratorAttribute>().First();
                 RegisterSafe(decoratorAttribute.Type, decoratorAttribute.Type, true);
-                var instanceTo = this[decoratorAttribute.Type];
+                var instanceTo = ResolveDependency(this[decoratorAttribute.Type]);
                 var preMethod = instanceTo.GetType().GetMethod(decoratorAttribute.PreMethod);
                 var postMethod = instanceTo.GetType().GetMethod(decoratorAttribute.PostMethod);
                 var actionType = typeof(Action<IMessage>);
@@ -122,10 +122,10 @@ namespace IoCContainerFunApp.Container
             {
                 var delegatorAttribute = attributes.OfType<DemonDelegatorAttribute>().First();
                 if (!_internalRegistrations.ContainsKey(delegatorAttribute.Abstraction))
-                    _internalRegistrations.Add(delegatorAttribute.Abstraction, GetInstance(delegatorAttribute.Implementation));
+                    _internalRegistrations.Add(delegatorAttribute.Abstraction, GetLazyInstance(delegatorAttribute.Implementation));
                 var instanceToProxy = _internalRegistrations[delegatorAttribute.Abstraction];
 
-                return DelegatorProxy.Create(instance, instanceToProxy, delegatorAttribute.Abstraction);
+                return DelegatorProxy.Create(instance, instanceToProxy as Lazy<object>, delegatorAttribute.Abstraction);
             }
             throw new NotImplementedException("Missing imp");
         }
