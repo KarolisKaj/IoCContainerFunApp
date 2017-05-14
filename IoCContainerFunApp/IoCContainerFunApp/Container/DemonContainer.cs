@@ -10,10 +10,11 @@ namespace IoCContainerFunApp.Container
     public class DemonContainer : IContainer
     {
         private Dictionary<Type, object> _registrations = new Dictionary<Type, object>();
+        private Dictionary<Type, object> _internalRegistrations = new Dictionary<Type, object>();
 
         public IEnumerable<Type> Parts => _registrations.Keys;
 
-        public object this[Type type] { get => _registrations[type]; }
+        public object this[Type type] { get { return _registrations[type]; } }
 
         public void Register<TAbstraction, TImplementation>(bool isLazy = false)
         {
@@ -120,8 +121,11 @@ namespace IoCContainerFunApp.Container
             if (attributes.OfType<DemonDelegatorAttribute>().Any())
             {
                 var delegatorAttribute = attributes.OfType<DemonDelegatorAttribute>().First();
+                if (!_internalRegistrations.ContainsKey(delegatorAttribute.Abstraction))
+                    _internalRegistrations.Add(delegatorAttribute.Abstraction, GetInstance(delegatorAttribute.Implementation));
+                var instanceToProxy = _internalRegistrations[delegatorAttribute.Abstraction];
 
-                return DelegatorProxy.Create(instance, GetInstance(delegatorAttribute.Implementation), delegatorAttribute.Abstraction);
+                return DelegatorProxy.Create(instance, instanceToProxy, delegatorAttribute.Abstraction);
             }
             throw new NotImplementedException("Missing imp");
         }
