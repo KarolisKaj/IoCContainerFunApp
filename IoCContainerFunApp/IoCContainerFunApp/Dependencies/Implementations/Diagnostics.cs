@@ -7,6 +7,10 @@ namespace IoCContainerFunApp.Dependencies.Implementations
     [DemonDelegator(typeof(IPerformance), typeof(CpuDelegator))]
     public class Diagnostics : MarshalByRefObject, IDiagnosis, IPerformance
     {
+        public Diagnostics()
+        {
+
+        }
         public double CurrentRamUsage => 80;
 
         public double CurrentCPUUsage => 40;

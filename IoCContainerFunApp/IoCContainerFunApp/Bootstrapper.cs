@@ -15,9 +15,9 @@ namespace IoCContainerFunApp
             Container.Register<IService, ClockService>(true);
             // Not lazy
             Container.Register<ICar, RedCar>(false);
-            Container.Register<IPerformance, Diagnostics>(false);
-            Container.Register<IDiagnosis, Diagnostics>(false);
-            System.Console.WriteLine((Container[typeof(IPerformance)] as IPerformance).CurrentCPUUsage);
+            Container.Register<IPerformance, Diagnostics>(true);
+            Container.Register<IDiagnosis, Diagnostics>(true);
+            //System.Console.WriteLine((Container[typeof(IPerformance)] as IPerformance).CurrentCPUUsage);
 
         }
 

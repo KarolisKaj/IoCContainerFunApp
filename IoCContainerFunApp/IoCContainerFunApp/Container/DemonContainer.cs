@@ -14,7 +14,7 @@ namespace IoCContainerFunApp.Container
 
         public IEnumerable<Type> Parts => _registrations.Keys;
 
-        public object this[Type type] { get { return _registrations[type]; } }
+        public object this[Type type] { get { return ResolveDependency(type); } }
 
         public void Register<TAbstraction, TImplementation>(bool isLazy = false)
         {
@@ -87,6 +87,11 @@ namespace IoCContainerFunApp.Container
             {
                 propInfo.SetValue(instance, ResolveDependency(_registrations[propInfo.PropertyType]));
             }
+        }
+
+        private object ResolveDependency(Type dependencyType)
+        {
+            return ResolveDependency(_registrations[dependencyType]);
         }
 
         private object ResolveDependency(object dependency)
