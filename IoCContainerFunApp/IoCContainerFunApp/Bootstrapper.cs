@@ -17,7 +17,7 @@ namespace IoCContainerFunApp
             Container.Register<ICar, RedCar>(false);
             Container.Register<IPerformance, Diagnostics>(true);
             Container.Register<IDiagnosis, Diagnostics>(true);
-            //System.Console.WriteLine((Container[typeof(IPerformance)] as IPerformance).CurrentCPUUsage);
+            System.Console.WriteLine((Container[typeof(IPerformance)] as IPerformance).CurrentCPUUsage);
 
         }
 
