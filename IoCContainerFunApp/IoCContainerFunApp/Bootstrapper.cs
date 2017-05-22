@@ -1,6 +1,7 @@
 ﻿using IoCContainerFunApp.Container;
 using IoCContainerFunApp.Dependencies.Implementations;
 using IoCContainerFunApp.Dependencies.Interfaces;
+using System;
 
 namespace IoCContainerFunApp
 {
@@ -17,7 +18,11 @@ namespace IoCContainerFunApp
             Container.Register<ICar, RedCar>(false);
             Container.Register<IPerformance, Diagnostics>(true);
             Container.Register<IDiagnosis, Diagnostics>(true);
-            System.Console.WriteLine((Container[typeof(IPerformance)] as IPerformance).CurrentCPUUsage);
+
+
+            var originalType = Container[typeof(IPerformance)];
+            Console.WriteLine(originalType.GetType());
+            Console.WriteLine((originalType as IPerformance).CurrentCPUUsage);
 
         }
 
